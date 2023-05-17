@@ -4,6 +4,9 @@ const vision = require('@google-cloud/vision');
 const language = require('@google-cloud/language');
 const assemblyai = require('assemblyai');
 const { Configuration, OpenAIApi } = require('openai');
+const cv = require('opencv4nodejs');
+const FormData = require('form-data');
+const fs = require('fs');
 
 
 
@@ -62,14 +65,79 @@ async function transcribeSpeech(userSpeech) {
 }
 
 function detectIntent(text) {
+    function detectIntent(text) {
+    // Lowercase the text for easier matching
+    const lowerText = text.toLowerCase();
+
+    // Define some keywords for each intent
+    const objectDetectionKeywords = ['detect', 'object', 'identify', 'recognition'];
+    const sentimentAnalysisKeywords = ['sentiment', 'feeling', 'emotion', 'mood'];
+    const generateTextKeywords = ['generate', 'text', 'write', 'create'];
+
+    // Check if the text contains any keywords for 'objectDetection'
+    for (const keyword of objectDetectionKeywords) {
+        if (lowerText.includes(keyword)) {
+            return 'objectDetection';
+        }
+    }
+
+    // Check if the text contains any keywords for 'sentimentAnalysis'
+    for (const keyword of sentimentAnalysisKeywords) {
+        if (lowerText.includes(keyword)) {
+            return 'sentimentAnalysis';
+        }
+    }
+
+    // Check if the text contains any keywords for 'generateText'
+    for (const keyword of generateTextKeywords) {
+        if (lowerText.includes(keyword)) {
+            return 'generateText';
+        }
+    }
+
+    // If no intent could be determined, return 'unknown'
+    return 'unknown';
+}
+
     // This function should implement intent detection logic
 }
 
 function getImageFromUser() {
+const videoCap = new cv.VideoCapture(0); // 0 for default camera
+
+    // Read a new frame from video
+    let frame = videoCap.read();
+
+    // Loop until there are no more frames
+    while (!frame.empty) {
+        // Resize the frame to reduce processing time
+        frame = frame.resize(300, 300);
+
+        // Write image to file
+        cv.imwrite('./frame.jpg', frame);
+
+        // Send this frame for object detection
+        handleRequest('./frame.jpg');
+
+        // Read next frame
+        frame = videoCap.read();
+    }
+
+    videoCap.release();
+
     // This function should implement image capture logic
 }
 
-function processObjectDetectionResult(response) {
+ async function processObjectDetectionResult(response) {
+const detectedObjects = response.localizedObjectAnnotations;
+
+    let message = "Detected objects are:\n";
+
+    detectedObjects.forEach((object, index) => {
+        message += `${index + 1}. ${object.name} with confidence: ${object.score}\n`;
+    });
+
+    return message;
     // This function should process the result of object detection and return a meaningful response
 }
 
