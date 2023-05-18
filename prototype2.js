@@ -59,12 +59,11 @@ async function handleRequest(userSpeech) {
 }
 
 async function transcribeSpeech(userSpeech) {
-    // This function should implement speech to text transcription using AssemblyAI
     const response = await axios.post('https://api.assemblyai.com/v2/transcript', {
         audio_url: userSpeech
     }, {
         headers: {
-            'authorization': 'your-assemblyai-api-key'
+            'authorization': process.env.ASSEMBLY_AI_API_KEY
         }
     });
 
