@@ -6,6 +6,8 @@ const assemblyai = require('assemblyai');
 const { OpenAIApi } = require('openai');
 const cv = require('opencv4nodejs');
 const fs = require('fs');
+const express = require('express');
+
 
 const visionClient = new vision.ImageAnnotatorClient({
     keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS
