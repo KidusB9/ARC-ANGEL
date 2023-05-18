@@ -14,6 +14,7 @@
     "openai": "^3.2.1",
     "opencv4nodejs": "^9.2.0",
     "dotenv": "^10.0.0"
+    "express": "^4.17.1"
   },
   "engines": {
     "node": "14.x"
