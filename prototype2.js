@@ -167,3 +167,20 @@ async function main() {
 }
 
 main().catch(console.error);
+const app = express();
+const port = process.env.PORT || 3000;
+
+app.get('/api', async (req, res) => {
+  const userSpeech = 'https://url-to-audio-file'; // URL to an audio file
+  try {
+    const response = await handleRequest(userSpeech);
+    res.send(response);
+  } catch(err) {
+    console.error(err);
+    res.status(500).send('An error occurred.');
+  }
+});
+
+app.listen(port, () => {
+  console.log(`App listening at http://localhost:${port}`);
+});
