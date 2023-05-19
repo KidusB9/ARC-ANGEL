@@ -12,7 +12,7 @@
     "axios": "^1.4.0",
     "assemblyai": "^1.0.0",
     "openai": "^3.2.1",
-    "opencv4nodejs": "^9.2.0",
+    "opencv4nodejs": "^5.6.0",
     "dotenv": "^16.0.3",
     "express": "^4.17.1"
   },
