@@ -16,13 +16,7 @@ const languageClient = new language.LanguageServiceClient({
     keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS
 });
 const openai = new OpenAIApi(process.env.OPEN_AI_API_KEY);
-const response = await axios.post('https://api.assemblyai.com/v2/transcript', {
-    audio_url: userSpeech
-}, {
-    headers: {
-        'authorization': process.env.ASSEMBLY_AI_API_KEY
-    }
-});
+
 
 async function handleRequest(userSpeech) {
     // Transcribe speech to text using AssemblyAI
