@@ -1,22 +1,17 @@
 {
-  "description": "An app that integrates multiple AI services",
-  "version": "1.0.0",
   "name": "my-app",
-  "main": "prototype2.js",
+  "version": "1.0.0",
+  "description": "An app that integrates multiple AI services",
   "scripts": {
-    "start": "node prototype2.js"
+    "start": "python prototype.py"
   },
   "dependencies": {
-    "@google-cloud/language": "^5.2.2",
-    "@google-cloud/vision": "^3.1.3",
-    "assemblyai": "^1.0.1",
-    "axios": "^1.4.0",
-    "dotenv": "^16.0.3",
-    "express": "^4.18.2",
-    "openai": "^3.2.1",
-    "opencv4nodejs": "^5.6.0"
-  },
-  "engines": {
-    "node": "20.2.0"
+    "@google-cloud/language": ">=5.2.2",
+    "@google-cloud/vision": ">=3.1.3",
+    "assemblyai": ">=1.0.1",
+    "axios": ">=0.24.0",
+    "python-dotenv": ">=0.19.1",
+    "flask": ">=2.1.1",
+    "opencv-python-headless": ">=4.5.3.56"
   }
 }
