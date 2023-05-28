@@ -85,20 +85,21 @@ def get_image_from_user():
         frames.append(frame)
 
     video_cap.release()
-        # Combine frames into a video buffer
-        output = cv2.VideoWriter_fourcc(*'MJPG')
-        out = cv2.VideoWriter('output.avi', output, 20.0, (300, 300))
 
-        for frame in frames:
-            out.write(frame)
+    # Combine frames into a video buffer
+    output = cv2.VideoWriter_fourcc(*'MJPG')
+    out = cv2.VideoWriter('output.avi', output, 20.0, (300, 300))
 
-        out.release()
+    for frame in frames:
+        out.write(frame)
 
-        # Read the video file into a buffer
-        with open('output.avi', 'rb') as f:
-            content = f.read()
+    out.release()
 
-        return vision.Image(content=content)
+    # Read the video file into a buffer
+    with open('output.avi', 'rb') as f:
+        content = f.read()
+
+    return vision.Image(content=content)
 
 def process_object_detection_result(response):
     detected_objects = response.localized_object_annotations
@@ -135,6 +136,3 @@ def api():
 
 if __name__ == '__main__':
     app.run()
-
-
-
