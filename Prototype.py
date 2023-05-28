@@ -14,28 +14,29 @@ language_client = language_v1.LanguageServiceClient()
 openai = OpenAIApi()
 
 def handle_request(user_speech):
-# Transcribe speech to text using AssemblyAI
-text = transcribe_speech(user_speech)
-# Determine user's intent from the transcribed text
-intent = detect_intent(text)
+    # Transcribe speech to text using AssemblyAI
+    text = transcribe_speech(user_speech)
+    # Determine user's intent from the transcribed text
+    intent = detect_intent(text)
 
-if intent == 'objectDetection':
-    # If intent is object detection, capture image and process it
-    image = get_image_from_user()
-    result = vision_client.object_localization(image=image)
-    return process_object_detection_result(result)
-elif intent == 'sentimentAnalysis':
-    # If intent is sentiment analysis, analyze sentiment of text
-    document = language_v1.Document(content=text, type_=language_v1.Document.Type.PLAIN_TEXT)
-    result = language_client.analyze_sentiment(request={'document': document})
-    return process_sentiment_analysis_result(result)
-elif intent == 'generateText':
-    # If intent is text generation, generate text using OpenAI API
-    gpt_response = openai.Completion.create(engine='text-davinci-003', prompt=text, max_tokens=200)
-    return gpt_response['choices'][0]['text']
-else:
-    # If intent could not be determined, return a generic response
-    return 'Sorry, I did not understand your request.'
+    if intent == 'objectDetection':
+        # If intent is object detection, capture image and process it
+        image = get_image_from_user()
+        result = vision_client.object_localization(image=image)
+        return process_object_detection_result(result)
+    elif intent == 'sentimentAnalysis':
+        # If intent is sentiment analysis, analyze sentiment of text
+        document = language_v1.Document(content=text, type_=language_v1.Document.Type.PLAIN_TEXT)
+        result = language_client.analyze_sentiment(request={'document': document})
+        return process_sentiment_analysis_result(result)
+    elif intent == 'generateText':
+        # If intent is text generation, generate text using OpenAI API
+        gpt_response = openai.Completion.create(engine='text-davinci-003', prompt=text, max_tokens=200)
+        return gpt_response['choices'][0]['text']
+    else:
+        # If intent could not be determined, return a generic response
+        return 'Sorry, I did not understand your request.'
+
 def transcribe_speech(user_speech):
 response = axios.post('https://api.assemblyai.com/v2/transcript', json={'audio_url': user_speech},
 headers={'authorization': os.environ['ASSEMBLY_AI_API_KEY']})
