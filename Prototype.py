@@ -122,16 +122,26 @@ def process_sentiment_analysis_result(response):
             return f"The sentiment of the text is {emotion['label']}."
 
 app = Flask(__name__)
+app.debug = True
 
 @app.route('/api')
 def api():
-    user_speech = 'https://url-to-audio-file' # URL to an audio file
+    dataset_path = "/home/ubuntu/ARC-ANGEL/LibriSpeech"  # Path to the LibriSpeech folder
     try:
-        response = handle_request(user_speech)
-        return response
+        transcriptions = []
+        for root, dirs, files in os.walk(dataset_path):
+            for file_name in files:
+                if file_name.endswith(".flac"):
+                    file_path = os.path.join(root, file_name)
+                    transcription = transcribe_speech(file_path)  # Process the speech file
+                    transcriptions.append(transcription)
+
+        # Do something with the transcriptions here
+
+        return "Transcriptions processed successfully."
     except Exception as e:
         print(e)
         return 'An error occurred.', 500
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host='0.0.0.0')
