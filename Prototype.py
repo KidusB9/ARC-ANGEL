@@ -1,4 +1,4 @@
-import axios
+import requests
 from google.cloud import vision
 from google.cloud import language_v1
 import assemblyai
@@ -11,7 +11,9 @@ from flask import Flask
 
 vision_client = vision.ImageAnnotatorClient()
 language_client = language_v1.LanguageServiceClient()
-openai = OpenAIApi()
+openai.organization = "YOUR_ORG_ID"  
+openai.api_key = os.getenv("OPENAI_API_KEY") 
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = '/home/ubuntu/ARC-ANGEL/key.json'
 
 def handle_request(user_speech):
     # Transcribe speech to text using AssemblyAI
@@ -38,9 +40,11 @@ def handle_request(user_speech):
         return 'Sorry, I did not understand your request.'
 
 def transcribe_speech(user_speech):
-    response = axios.post('https://api.assemblyai.com/v2/transcript', json={'audio_url': user_speech},
-                          headers={'authorization': os.environ['ASSEMBLY_AI_API_KEY']})
-    return response.json()['text']
+    response = requests.post('https://api.assemblyai.com/v2/transcript', json={'audio_url': user_speech},
+                             headers={'authorization': os.environ['ASSEMBLY_AI_API_KEY']})
+    response_json = response.json()
+    text = response_json.get('text', 'Transcription not available')  # Use a fallback value if 'text' key is not found
+    return text
 
 def detect_intent(text):
     # Lowercase the text for easier matching
@@ -69,7 +73,7 @@ def detect_intent(text):
     return 'unknown'
 
 def get_image_from_user():
-    video_cap = cv2.VideoCapture(0) # 0 for default camera
+    video_cap = cv2.VideoCapture(0)  # 0 for default camera
     frames = []
     while True:
         # Read a new frame from video
@@ -85,20 +89,21 @@ def get_image_from_user():
         frames.append(frame)
 
     video_cap.release()
-        # Combine frames into a video buffer
-        output = cv2.VideoWriter_fourcc(*'MJPG')
-        out = cv2.VideoWriter('output.avi', output, 20.0, (300, 300))
 
-        for frame in frames:
-            out.write(frame)
+    # Combine frames into a video buffer
+    output = cv2.VideoWriter_fourcc(*'MJPG')
+    out = cv2.VideoWriter('output.avi', output, 20.0, (300, 300))
 
-        out.release()
+    for frame in frames:
+        out.write(frame)
 
-        # Read the video file into a buffer
-        with open('output.avi', 'rb') as f:
-            content = f.read()
+    out.release()
 
-        return vision.Image(content=content)
+    # Read the video file into a buffer
+    with open('output.avi', 'rb') as f:
+        content = f.read()
+
+    return vision.Image(content=content)
 
 def process_object_detection_result(response):
     detected_objects = response.localized_object_annotations
@@ -121,6 +126,8 @@ def process_sentiment_analysis_result(response):
         if emotion['range'][0] <= sentiment <= emotion['range'][1]:
             return f"The sentiment of the text is {emotion['label']}."
 
+import traceback
+
 app = Flask(__name__)
 app.debug = True
 
@@ -140,7 +147,7 @@ def api():
 
         return "Transcriptions processed successfully."
     except Exception as e:
-        print(e)
+        print(traceback.format_exc())
         return 'An error occurred.', 500
 
 if __name__ == '__main__':
