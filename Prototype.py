@@ -16,9 +16,9 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = '/home/ubuntu/ARC-ANGEL/key.json'
 
 def handle_request(user_speech):
-    # Transcribe speech to text using AssemblyAI
+ 
     text = transcribe_speech(user_speech)
-    # Determine user's intent from the transcribed text
+   
     intent = detect_intent(text)
 
     if intent == 'objectDetection':
@@ -47,7 +47,7 @@ def transcribe_speech(user_speech):
     return text
 
 def detect_intent(text):
-    # Lowercase the text for easier matching
+  
     lower_text = text.lower()
   
     object_detection_keywords = ['detect', 'object', 'identify', 'recognition']
