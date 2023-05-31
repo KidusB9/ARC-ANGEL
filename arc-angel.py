@@ -20,27 +20,27 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
 def handle_request(user_speech):
-    # Transcribe speech to text using AssemblyAI
+   
 text = transcribe_speech(user_speech)
- # Determine user's intent from the transcribed text
+
     intent = detect_intent(text)
 
     if intent == 'objectDetection':
-        # If intent is object detection, capture image and process it
+   
         image = get_image_from_user()
         result = vision_client.object_localization(image=image)
         return process_object_detection_result(result)
     elif intent == 'sentimentAnalysis':
-        # If intent is sentiment analysis, analyze sentiment of text
+      
         document = language_v1.Document(content=text, type_=language_v1.Document.Type.PLAIN_TEXT)
         result = language_client.analyze_sentiment(request={'document': document})
         return process_sentiment_analysis_result(result)
     elif intent == 'generateText':
-        # If intent is text generation, generate text using OpenAI API
+     
         gpt_response = openai.Completion.create(engine='text-davinci-003', prompt=text, max_tokens=200)
         return gpt_response['choices'][0]['text']
     else:
-        # If intent could not be determined, return a generic response
+       
         return 'Sorry, I did not understand your request.'
 def transcribe_speech(user_speech):
     response = requests.post('https://api.assemblyai.com/v2/transcript', json={'audio_url': user_speech},
@@ -52,29 +52,29 @@ def transcribe_speech(user_speech):
 
 
 def detect_intent(text):
-    # Lowercase the text for easier matching
+   
     lower_text = text.lower()
-    # Define some keywords for each intent
+  
     object_detection_keywords = ['detect', 'object', 'identify', 'recognition']
     sentiment_analysis_keywords = ['sentiment', 'feeling', 'emotion', 'mood']
     generate_text_keywords = ['generate', 'text', 'write', 'create']
 
-    # Check if the text contains any keywords for 'objectDetection'
+  
     for keyword in object_detection_keywords:
         if keyword in lower_text:
             return 'objectDetection'
 
-    # Check if the text contains any keywords for 'sentimentAnalysis'
+   
 for keyword in sentiment_analysis_keywords:
         if keyword in lower_text:
             return 'sentimentAnalysis'
 
-    # Check if the text contains any keywords for 'generateText'
+
     for keyword in generate_text_keywords:
         if keyword in lower_text:
             return 'generateText'
 
-    # If no intent could be determined, return 'unknown'
+
     return 'unknown'
 
 
@@ -82,19 +82,19 @@ def get_image_from_user():
     video_cap = cv2.VideoCapture(0)  # 0 for default camera
     frames = []
     while True:
-        # Read a new frame from video
+      
         ret, frame = video_cap.read()
 
         if not ret:
             break
-# Resize the frame to reduce processing time
+
         frame = cv2.resize(frame, (300, 300))
 
         # Add frame to list of frames
         frames.append(frame)
 
     video_cap.release()
- # Combine frames into a video buffer
+ 
     output = cv2.VideoWriter_fourcc(*'MJPG')
     out = cv2.VideoWriter('output.avi', output, 20.0, (300, 300))
 
@@ -103,7 +103,7 @@ def get_image_from_user():
 
     out.release()
 
-    # Read the video file into a buffer
+    
     with open('output.avi', 'rb') as f:
         content = f.read()
 
@@ -146,7 +146,7 @@ def api():
                     transcription = transcribe_speech(file_path)  # Process the speech file
                     transcriptions.append(transcription)
 
-        # Do something with the transcriptions here
+      
 
         return "Transcriptions processed successfully."
     except Exception as e:
