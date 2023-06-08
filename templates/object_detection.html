@@ -2,11 +2,70 @@
 <html>
 <head>
     <title>Object Detection</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
 </head>
 <body>
     <h1>Object Detection</h1>
-    <p>Object detection response: {{ object_response }}</p>
-    <p>Sentiment analysis response: {{ sentiment_response }}</p>
-    <p>Generated text response: {{ generated_response }}</p>
+    <p>Object detection response: <span id="object-response"></span></p>
+    <video id="video-feed" width="640" height="480" autoplay></video>
+    <button id="start-button">Start Webcam</button>
+
+    <script>
+        const objectResponse = document.getElementById('object-response');
+        const videoFeed = document.getElementById('video-feed');
+        const startButton = document.getElementById('start-button');
+
+        // Function to start webcam and detection
+        function startWebcamAndDetection() {
+            navigator.mediaDevices.getUserMedia({ video: true })
+            .then((stream) => {
+                videoFeed.srcObject = stream;
+                startButton.style.display = 'none'; // hide start button after starting webcam
+
+                // Create a canvas element for capturing video frames
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+
+                canvas.width = videoFeed.videoWidth;
+                canvas.height = videoFeed.videoHeight;
+
+                // Function to capture and send video frames for object detection
+                function captureAndDetect() {
+                    context.drawImage(videoFeed, 0, 0, canvas.width, canvas.height);
+                    const frameData = canvas.toDataURL('image/jpeg', 0.8);
+
+                    // Send frameData to your server for object detection
+                    fetch('/object-detection', {
+                        method: 'POST',
+                        body: JSON.stringify({ frameData }),
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then((response) => response.json())
+                    .then((data) => {
+                        objectResponse.textContent = data.result;
+                    })
+                    .catch((error) => {
+                        console.error('Error performing object detection:', error);
+                    });
+
+                    // Call captureAndDetect recursively to continuously process frames
+                    requestAnimationFrame(captureAndDetect);
+                }
+
+                // Start capturing and detecting video frames
+                captureAndDetect();
+            })
+            .catch((error) => {
+                console.error('Error accessing webcam:', error);
+            });
+        }
+
+        // Listen for start button click
+        startButton.addEventListener('click', startWebcamAndDetection);
+    </script>
 </body>
 </html>
