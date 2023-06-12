@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Real-time Object Detection</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+</head>
+<body>
+    <h1>Real-time Object Detection</h1>
+    <video id="webcam" style="display: none;" width="640" height="480" autoplay></video>
+    <canvas id="canvas" width="640" height="480"></canvas>
+
+    <script>
+        const video = document.getElementById('webcam');
+        const canvas = document.getElementById('canvas');
+        const context = canvas.getContext('2d');
+
+        // Function to start the webcam
+        async function startWebcam() {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = stream;
+
+            return new Promise((resolve) => {
+                video.onloadedmetadata = () => {
+                    resolve(video);
+                };
+            });
+        }
+
+        // Function to perform object detection
+        async function detectFrame(video, model) {
+            context.clearRect(0, 0, canvas.width, canvas.height); // clear previous drawings
+
+            // Draw the video frame onto the canvas
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            const predictions = await model.detect(video);
+            predictions.forEach((prediction) => {
+                context.beginPath();
+                context.rect(
+                    prediction.bbox[0],
+                    prediction.bbox[1],
+                    prediction.bbox[2],
+                    prediction.bbox[3]
+                );
+                context.lineWidth = 2;
+                context.strokeStyle = 'red';
+                context.fillStyle = 'red';
+                context.stroke();
+                context.fillText(
+                    prediction.class + ' (' + Math.round(prediction.score * 100) + '%)',
+                    prediction.bbox[0],
+                    prediction.bbox[1] > 10 ? prediction.bbox[1] - 5 : 10
+                );
+            });
+
+            // Call detectFrame again to form a loop
+            requestAnimationFrame(() => {
+                detectFrame(video, model);
+            });
+        }
+
+        // Load the model and start the webcam
+        (async function main() {
+            const model = await cocoSsd.load();
+            const video = await startWebcam();
+            detectFrame(video, model);
+        })();
+    </script>
+</body>
+</html>
