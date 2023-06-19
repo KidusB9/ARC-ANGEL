@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Universal Translator and Emergency Contact</title>
+    <style>
+        body {
+            transition: background-color 0.5s ease;
+        }
+        body.light-mode {
+            background-color: white;
+            color: black;
+        }
+        body.dark-mode {
+            background-color: black;
+            color: white;
+        }
+    </style>
+</head>
+<body class="light-mode">
+    <h1>Universal Translator and Emergency Contact</h1>
+
+    <button id="themeButton">Switch to Dark Mode</button>
+    <br><br>
+
+    <select id="langSelect">
+        <option value="en-US">English</option>
+        <option value="es-ES">Spanish</option>
+        <!-- Add more languages as necessary -->
+    </select>
+
+    <button id="startStopButton">Start Listening</button>
+    <p id="result"></p>
+
+    <h2>Emergency Contact Form</h2>
+    <form id="contactForm">
+        <label for="name">Name:</label><br>
+        <input type="text" id="name" required><br>
+        <label for="email">Email:</label><br>
+        <input type="email" id="email" required><br>
+        <input type="submit" value="Submit">
+    </form>
+
+    <script>
+        let listening = false;
+        const resultP = document.getElementById('result');
+        const startStopButton = document.getElementById('startStopButton');
+        const langSelect = document.getElementById('langSelect');
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition || window.mozSpeechRecognition || window.msSpeechRecognition)();
+
+        recognition.onresult = function(event) {
+            resultP.innerText = event.results[0][0].transcript;
+        };
+
+        startStopButton.onclick = function() {
+            if (listening) {
+                recognition.stop();
+                startStopButton.innerText = 'Start Listening';
+            } else {
+                recognition.lang = langSelect.value;
+                recognition.start();
+                startStopButton.innerText = 'Stop Listening';
+            }
+            listening = !listening;
+        };
+
+        const themeButton = document.getElementById('themeButton');
+        themeButton.onclick = function() {
+            document.body.classList.toggle('light-mode');
+            document.body.classList.toggle('dark-mode');
+
+            themeButton.innerText = document.body.classList.contains('light-mode') ? 'Switch to Dark Mode' : 'Switch to Light Mode';
+        };
+
+        const contactForm = document.getElementById('contactForm');
+        contactForm.onsubmit = function(event) {
+            event.preventDefault();
+            alert('Emergency Contact Submitted');
+        };
+    </script>
+</body>
+</html>
