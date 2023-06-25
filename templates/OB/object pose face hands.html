@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Real-time Object, Pose and Facial Landmarks Detection</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-landmarks-detection@1.0.2/dist/face-landmarks-detection.min.js"></script>
+
+
+  
+</head>
+<body>
+    <h1>Real-time Object, Pose and Facial Landmarks Detection</h1>
+    <video id="webcam" style="display: none;" width="640" height="480" autoplay></video>
+    <canvas id="canvas" width="640" height="480"></canvas>
+
+    <script>
+        const video = document.getElementById('webcam');
+        const canvas = document.getElementById('canvas');
+        const context = canvas.getContext('2d');
+
+        // Function to start the webcam
+        async function startWebcam() {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = stream;
+
+            return new Promise((resolve) => {
+                video.onloadedmetadata = () => {
+                    resolve(video);
+                };
+            });
+        }
+
+        function drawSegment(from, to, color) {
+            if (from && to && from.x !== undefined && from.y !== undefined && to.x !== undefined && to.y !== undefined) {
+                context.beginPath();
+                context.moveTo(from.x, from.y);
+                context.lineTo(to.x, to.y);
+                context.strokeStyle = color;
+                context.lineWidth = 2;
+                context.stroke();
+            }
+        }
+
+
+
+function drawLandmarks(predictions) {
+    if(predictions && Array.isArray(predictions)){
+        for (let i = 0; i < predictions.length; i++) {
+            const keypoints = predictions[i].scaledMesh;
+            if(keypoints && Array.isArray(keypoints)){
+                for (let j = 0; j < keypoints.length; j++) {
+                    const [x, y, z] = keypoints[j];
+                    const newX = canvas.width * x / video.videoWidth;
+                    const newY = canvas.height * y / video.videoHeight;
+                    context.beginPath();
+                    context.arc(newX, newY, 1 /* radius */, 0, 2 * Math.PI);
+                    context.fillStyle = 'blue';
+                    context.fill();
+                }
+            }
+        }
+    }
+}
+
+
+
+
+
+
+        // Function to draw the pose
+        function drawPose(pose) {
+            const keypoints = pose.keypoints;
+            const skeletonColor = 'aqua';
+            const findKeypoint = name => keypoints.find(k => k.name === name);
+            drawSegment(findKeypoint('left_shoulder'), findKeypoint('right_shoulder'), skeletonColor); // Shoulders
+            drawSegment(findKeypoint('left_hip'), findKeypoint('right_hip'), skeletonColor); // Hips
+            drawSegment(findKeypoint('left_shoulder'), findKeypoint('left_hip'), skeletonColor); // Left body side
+            drawSegment(findKeypoint('right_shoulder'), findKeypoint('right_hip'), skeletonColor); // Right body side
+
+            // Left arm
+            drawSegment(findKeypoint('left_shoulder'), findKeypoint('left_elbow'), skeletonColor);
+            drawSegment(findKeypoint('left_elbow'), findKeypoint('left_wrist'), skeletonColor);
+
+            // Right arm
+            drawSegment(findKeypoint('right_shoulder'), findKeypoint('right_elbow'), skeletonColor);
+            drawSegment(findKeypoint('right_elbow'), findKeypoint('right_wrist'), skeletonColor);
+
+            // Left leg
+            drawSegment(findKeypoint('left_hip'), findKeypoint('left_knee'), skeletonColor);
+            drawSegment(findKeypoint('left_knee'), findKeypoint('left_ankle'), skeletonColor);
+
+            // Right leg
+            drawSegment(findKeypoint('right_hip'), findKeypoint('right_knee'), skeletonColor);
+            drawSegment(findKeypoint('right_knee'), findKeypoint('right_ankle'), skeletonColor);
+        }
+
+        // Function to perform object and pose detection
+async function detectFrame(video, objectModel, poseDetector, faceModel) {
+    context.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw the video frame onto the canvas
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    // Object detection
+    const predictions = await objectModel.detect(video);
+    predictions.forEach((prediction) => {
+        context.beginPath();
+        context.rect(
+            prediction.bbox[0],
+            prediction.bbox[1],
+            prediction.bbox[2],
+            prediction.bbox[3]
+        );
+        context.lineWidth = 2;
+        context.strokeStyle = 'red';
+        context.fillStyle = 'red';
+        context.stroke();
+        context.fillText(
+            prediction.class + ' (' + Math.round(prediction.score * 100) + '%)',
+            prediction.bbox[0],
+            prediction.bbox[1] > 10 ? prediction.bbox[1] - 5 : 10
+        );
+    });
+
+    // Pose detection
+    try {
+        const poses = await poseDetector.estimatePoses(video);
+        poses.forEach(pose => {
+            console.log(pose.keypoints);
+            drawPose(pose);
+        });
+    } catch (error) {
+        console.error(error);
+    }
+
+    const facePredictions = await faceModel.estimateFaces(video);
+    drawLandmarks(facePredictions);
+
+    // Call detectFrame again to form a loop
+    requestAnimationFrame(() => {
+        detectFrame(video, objectModel, poseDetector, faceModel);
+    });
+}
+
+        // Load the models and start the webcam
+               (async function main() {
+            await tf.setBackend('webgl');
+            await tf.ready();
+
+            const objectModel = await cocoSsd.load();
+            const poseModelType = poseDetection.SupportedModels.MoveNet;
+            const poseModelConfig = {
+              modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING,
+              enableTracking: true
+            };
+            const poseDetector = await poseDetection.createDetector(poseModelType, poseModelConfig);
+const model = faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh;
+const detectorConfig = {
+  runtime: 'mediapipe',
+  solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh',
+}
+const faceModel = await faceLandmarksDetection.createDetector(model, detectorConfig);
+
+
+
+            const video = await startWebcam();
+            video.play();
+            detectFrame(video, objectModel, poseDetector, faceModel);
+        })();
+    </script>
+</body>
+</html>
