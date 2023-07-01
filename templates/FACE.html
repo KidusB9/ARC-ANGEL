@@ -32,7 +32,7 @@
     <canvas id="myCanvas"></canvas>
   </div>
 
-  <!-- ... -->
+
 
 <script>
   const video = document.getElementById('myVideo');
@@ -46,7 +46,7 @@ async function loadLabeledImages() {
     const labeledFaceDescriptors = await Promise.all(
         labels.map(async (label, i) => {
             const descriptions = [];
-            // Assuming each person has only one image for simplicity
+          
             const imgPath = `/IMG/${label}.jpg`;
             const img = await faceapi.fetchImage(imgPath);
             const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
@@ -59,7 +59,7 @@ async function loadLabeledImages() {
 }
 
 
- // Will hold our training data
+ 
 
   Promise.all([
     faceapi.nets.tinyFaceDetector.loadFromUri('/models'),
@@ -105,7 +105,7 @@ async function loadLabeledImages() {
       resizedDetections.forEach(result => {
         const { age, gender, genderProbability } = result;
 
-        // Display age and gender
+      
         new faceapi.draw.DrawTextField(
           [
             `${faceapi.utils.round(age, 0)} years`,
@@ -114,7 +114,7 @@ async function loadLabeledImages() {
           result.detection.box.bottomRight
         ).draw(canvas);
 
-        // Add face recognition
+       
         const bestMatch = faceMatcher.findBestMatch(result.descriptor);
         new faceapi.draw.DrawTextField(
           [`${bestMatch.label} (${faceapi.utils.round(bestMatch.distance, 2)})`],
@@ -125,6 +125,6 @@ async function loadLabeledImages() {
   });
 </script>
 
-<!-- ... -->
+
 </html>
 
