@@ -24,7 +24,7 @@
         const canvas = document.getElementById('canvas');
         const context = canvas.getContext('2d');
 
-        // Function to start the webcam
+        
         async function startWebcam() {
             const stream = await navigator.mediaDevices.getUserMedia({ video: true });
             video.srcObject = stream;
@@ -73,7 +73,6 @@ function drawLandmarks(predictions) {
 
 
 
-        // Function to draw the pose
         function drawPose(pose) {
             const keypoints = pose.keypoints;
             const skeletonColor = 'aqua';
@@ -83,15 +82,15 @@ function drawLandmarks(predictions) {
             drawSegment(findKeypoint('left_shoulder'), findKeypoint('left_hip'), skeletonColor); // Left body side
             drawSegment(findKeypoint('right_shoulder'), findKeypoint('right_hip'), skeletonColor); // Right body side
 
-            // Left arm
+        
             drawSegment(findKeypoint('left_shoulder'), findKeypoint('left_elbow'), skeletonColor);
             drawSegment(findKeypoint('left_elbow'), findKeypoint('left_wrist'), skeletonColor);
 
-            // Right arm
+         
             drawSegment(findKeypoint('right_shoulder'), findKeypoint('right_elbow'), skeletonColor);
             drawSegment(findKeypoint('right_elbow'), findKeypoint('right_wrist'), skeletonColor);
 
-            // Left leg
+          
             drawSegment(findKeypoint('left_hip'), findKeypoint('left_knee'), skeletonColor);
             drawSegment(findKeypoint('left_knee'), findKeypoint('left_ankle'), skeletonColor);
 
