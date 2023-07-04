@@ -16,7 +16,7 @@
         const canvas = document.getElementById('canvas');
         const context = canvas.getContext('2d');
 
-        // Function to start the webcam
+ 
         async function startWebcam() {
             const stream = await navigator.mediaDevices.getUserMedia({ video: true });
             video.srcObject = stream;
