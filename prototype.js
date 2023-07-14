@@ -11,16 +11,16 @@ const fs = require('fs');
 
 
 
-// Initialize API clients
+
 const visionClient = new vision.ImageAnnotatorClient();
 const languageClient = new language.LanguageServiceClient();
 openai.setApiKey('your-openai-api-key');
 
 async function handleRequest(userSpeech) {
-    // Transcribe speech to text using AssemblyAI
+
     const text = await transcribeSpeech(userSpeech);
     
-    // Determine user's intent from the transcribed text
+  
     const intent = detectIntent(text);
 
     if (intent === 'objectDetection') {
