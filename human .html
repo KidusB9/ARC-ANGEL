@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Real-time Object, Pose and Facial Landmarks Detection by kidus</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/handpose"></script>
+
+    <style>
+         body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Arial', sans-serif;
+    display: flex;
+    flex-direction: column; 
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh; 
+    animation: Gradient 15s ease infinite;
+    background-size: 400% 400%;
+    position: relative;
+    background: linear-gradient(-45deg, #00BFFF, #1E90FF, #4169E1, #0000CD);
+ z-index: -1;
+}
+
+@keyframes Gradient {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+   
+    
+}
+
+h1 {
+    z-index: 2;
+    margin-top: 40px;
+    color: #FFF;
+    font-size: 2.2em;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    transition: all 0.3s ease;
+}
+
+h1:hover {
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+    transform: scale(1.05);
+}
+
+#canvas {
+    border: 5px solid #ffffff;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    z-index: 1;
+    position: absolute;
+    top: 0;
+    left: 0;
+     
+}
+
+#canvas:hover {
+    box-shadow: 0 10px 50px rgba(0, 0, 0, 0.3);
+    transform: scale(1.05);
+    max-width: 90vw;  
+    max-height: 90vh;
+}
+
+#webcam {
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0.5; 
+   z-index: 0;
+}
+
+    </style>
+</head>
+
+<body>
+    <h1>Real-time Object, Pose and Facial Landmarks Detection by Kidus</h1>
+    <video id="webcam" autoplay playsinline muted></video>
+    <canvas id="canvas"></canvas>
+<script type="module">
+    import Human from 'https://unpkg.com/@vladmandic/human@latest/dist/human.esm.js';
+
+    
+        const video = document.getElementById('webcam');
+        const canvas = document.getElementById('canvas');
+        const context = canvas.getContext('2d');
+        
+        const humanConfig = {
+            backend: 'webgl',
+            modelBasePath: 'https://unpkg.com/@vladmandic/human@latest/models/',
+            face: { enabled: true },
+            body: { modelPath: 'movenet-lightning.json', enabled: true }, 
+            hand: { enabled: true }
+        };
+
+        const human = new Human(humanConfig);
+
+        async function startWebcam() {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = stream;
+            return new Promise((resolve) => {
+                video.onloadedmetadata = () => {
+                 
+                    resolve(video);
+                };
+            });
+        }
+
+   function drawHumanBody(humanResults) {
+    // Draw body keypoints
+    if (humanResults.body) {
+        humanResults.body.forEach(body => {
+            if (body.keypoints) {
+                body.keypoints.forEach(point => {
+                    drawKeypoint(point.position, 'yellow');
+                });
+            }
+        });
+    }
+    
+    // Draw face keypoints
+    if (humanResults.face) {
+        humanResults.face.forEach(face => {
+            if (face.landmarks) {
+                face.landmarks.forEach(point => {
+                    drawKeypoint(point, 'cyan');
+                });
+            }
+        });
+    }
+
+    // Draw hand keypoints
+    if (humanResults.hand && Array.isArray(humanResults.hand)) {
+        humanResults.hand.forEach(hand => {
+            if (hand.landmarks && Array.isArray(hand.landmarks)) {
+                hand.landmarks.forEach(point => {
+                    drawKeypoint(point, 'magenta');
+                });
+            }
+        });
+    }
+}
+
+function drawKeypoint(position, color) {
+    const { x, y } = position;
+    context.beginPath();
+    context.arc(x, y, 5, 0, 2 * Math.PI);
+    context.fillStyle = color;
+    context.fill();
+}
+
+async function detectFrame(video, objectModel) {
+    context.clearRect(0, 0, canvas.width, canvas.height);
+     if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    }
+
+    const predictions = await objectModel.detect(video);
+    predictions.forEach(prediction => {
+        const [x, y, width, height] = prediction.bbox;
+        context.strokeStyle = 'red';
+        context.lineWidth = 2;
+        context.strokeRect(x, y, width, height);
+        context.fillStyle = 'red';
+        context.fillText(prediction.class + ' (' + Math.round(prediction.score * 100) + '%)', x, y > 10 ? y - 5 : 10);
+    });
+
+    try {
+    const humanResults = await human.detect(video);
+    drawHumanBody(humanResults);
+} catch (error) {
+    console.error('Error drawing video on canvas:', error);
+}
+
+requestAnimationFrame(() => {
+    detectFrame(video, objectModel);
+});
+}
+
+
+ 
+
+
+        (async function main() {
+            await tf.ready();
+            const objectModel = await cocoSsd.load();
+            
+            await startWebcam();
+          
+            video.play();
+            video.addEventListener('play', () => {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                setTimeout(() => {
+        detectFrame(video, objectModel);
+    }, 10000);
+              });
+
+        })();
+
+    </script>
+</body>
+
+</html>
