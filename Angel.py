@@ -397,7 +397,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import CountVectorizer
 import json
 
-# Sample data: Replace this with your actual data
+# Sample data: for the purpose t=of this repositiry
 sample_data = [
     {"id": 1, "description": "apple orange banana"},
     {"id": 2, "description": "apple grape"},
