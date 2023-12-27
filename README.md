@@ -1,147 +1,95 @@
-# ARC-ANGEL
-# ARC-ANGEL API Server
+# 🦜️🔗 LangChain
 
-## Overview
+⚡ Building applications with LLMs through composability ⚡
 
-ARC-ANGEL is a high-performance, scalable Flask-based API server offering services from object detection to sentiment analysis. The server is designed to be easy to deploy and integrate into any system.
-
-## Table of Contents
-
-- [Features](#features)
-- [Installation](#installation)
-- [Usage](#usage)
-- [API Endpoints](#api-endpoints)
-- [Contributing](#contributing)
-- [License](#license)
-
-## Features
-
-- Object Detection
-- Sentiment Analysis
-- Built with Flask and Python
-- Uses TensorFlow, OpenAI, Google Cloud Vision, and Google Cloud Language
-
-## Installation
-
-To get started with ARC-ANGEL, you'll need to install some prerequisites. Use the following commands to install the required Python packages:
-
-```bash
-pip install Flask
-pip install tensorflow
-pip install google-cloud-vision
-pip install google-cloud-language
-
-## Or you can install all dependencies at once using the provided requirements.txt:
-```bash
-pip install -r requirements.txt
-
-## Installation
-
-```bash
-git clone https://github.com/yourusername/ARC-ANGEL.git
-cd ARC-ANGEL
-
-# Sample Python code to call the Object Detection API
-import requests
-response = requests.post('http://localhost:5000/api/v1/object-detection', json={"your": "data_here"})
+[![Release Notes](https://img.shields.io/github/release/hwchase17/langchain)](https://github.com/hwchase17/langchain/releases)
+[![lint](https://github.com/hwchase17/langchain/actions/workflows/lint.yml/badge.svg)](https://github.com/hwchase17/langchain/actions/workflows/lint.yml)
+[![test](https://github.com/hwchase17/langchain/actions/workflows/test.yml/badge.svg)](https://github.com/hwchase17/langchain/actions/workflows/test.yml)
+[![Downloads](https://static.pepy.tech/badge/langchain/month)](https://pepy.tech/project/langchain)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Twitter](https://img.shields.io/twitter/url/https/twitter.com/langchainai.svg?style=social&label=Follow%20%40LangChainAI)](https://twitter.com/langchainai)
+[![](https://dcbadge.vercel.app/api/server/6adMQxSpJS?compact=true&style=flat)](https://discord.gg/6adMQxSpJS)
+[![Open in Dev Containers](https://img.shields.io/static/v1?label=Dev%20Containers&message=Open&color=blue&logo=visualstudiocode)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/hwchase17/langchain)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/hwchase17/langchain)
+[![GitHub star chart](https://img.shields.io/github/stars/hwchase17/langchain?style=social)](https://star-history.com/#hwchase17/langchain)
+[![Dependency Status](https://img.shields.io/librariesio/github/hwchase17/langchain)](https://libraries.io/github/hwchase17/langchain)
+[![Open Issues](https://img.shields.io/github/issues-raw/hwchase17/langchain)](https://github.com/hwchase17/langchain/issues)
 
 
-## Important Code Snippets
+Looking for the JS/TS version? Check out [LangChain.js](https://github.com/hwchase17/langchainjs).
 
-In addition to the basic setup and API calls, here are some key parts of the code that make ARC-ANGEL work:
+**Production Support:** As you move your LangChains into production, we'd love to offer more hands-on support.
+Fill out [this form](https://airtable.com/appwQzlErAS2qiP0L/shrGtGaVBVAz7NcV2) to share more about what you're building, and our team will get in touch.
 
-### Object Detection Endpoint
+## Quick Install
 
-The object detection endpoint uses Flask, OpenCV, and Google Vision API. The POST method accepts base64 encoded images, processes them, and returns the detected objects.
+`pip install langchain`
+or
+`pip install langsmith && conda install langchain -c conda-forge`
 
-```python
-@app.route('/object-detection', methods=['POST'])
-def object_detection():
-    data = request.get_json()
-    frame_data = data.get('frameData')
-    img_str = frame_data.split(',')[1]
-    img_bytes = base64.b64decode(img_str)
-    img_arr = np.frombuffer(img_bytes, np.uint8)
-    img = cv2.imdecode(img_arr, cv2.IMREAD_COLOR)
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    image = vision.Image(content=img_bytes)
-    response = vision_client.object_localization(image=image)
-    objects = response.localized_object_annotations
-    return jsonify({'result': [obj.name for obj in objects]})
+## 🤔 What is this?
 
-```python object detection
-import cv2
+Large language models (LLMs) are emerging as a transformative technology, enabling developers to build applications that they previously could not. However, using these LLMs in isolation is often insufficient for creating a truly powerful app - the real power comes when you can combine them with other sources of computation or knowledge.
 
-def get_image_from_user():
-    video_cap = cv2.VideoCapture(0)
-    frames = []
-    while True:
-        ret, frame = video_cap.read()
-        if not ret:
-            break
-        frame = cv2.resize(frame, (300, 300))
-        frames.append(frame)
-    video_cap.release()
+This library aims to assist in the development of those types of applications. Common examples of these applications include:
 
-    output = cv2.VideoWriter_fourcc(*'MJPG')
-    out = cv2.VideoWriter('output.avi', output, 20.0, (300, 300))
-    for frame in frames:
-        out.write(frame)
-    out.release()
+**❓ Question Answering over specific documents**
 
-    with open('output.avi', 'rb') as f:
-        content = f.read()
-    return content
+- [Documentation](https://python.langchain.com/docs/use_cases/question_answering/)
+- End-to-end Example: [Question Answering over Notion Database](https://github.com/hwchase17/notion-qa)
 
-### Speech Transcription and Intent Detection
+**💬 Chatbots**
 
-These two functions are crucial for handling the speech input from the user and detecting the user's intent. They make use of Google's Speech-to-Text API and custom keyword matching to route the request to the appropriate action.
+- [Documentation](https://python.langchain.com/docs/use_cases/chatbots/)
+- End-to-end Example: [Chat-LangChain](https://github.com/hwchase17/chat-langchain)
 
-#### Speech Transcription
-Here's the function to transcribe speech, either from a microphone or an audio file:
+**🤖 Agents**
 
-```python
-def transcribe_speech(audio_source):
-   def transcribe_speech(audio_source):
-    if audio_source == 'microphone':
-        CHANNELS = 1
-        RATE = 16000
-        RECORD_SECONDS = 5
-        WAVE_OUTPUT_FILENAME = "audio.wav"
+- [Documentation](https://python.langchain.com/docs/modules/agents/)
+- End-to-end Example: [GPT+WolframAlpha](https://huggingface.co/spaces/JavaFXpert/Chat-GPT-LangChain)
 
-        print("Recording audio...")
-        audio_data = sd.rec(int(RATE * RECORD_SECONDS), samplerate=RATE, channels=CHANNELS)
-        sd.wait()
-        print("Finished recording.")
+## 📖 Documentation
 
-        with wave.open(WAVE_OUTPUT_FILENAME, 'wb') as wavefile:
-            wavefile.setnchannels(CHANNELS)
-            wavefile.setsampwidth(2)
-            wavefile.setframerate(RATE)
-            wavefile.writeframes(audio_data.tobytes())
+Please see [here](https://python.langchain.com) for full documentation on:
 
-        audio_file_path = WAVE_OUTPUT_FILENAME
-    else:
-        audio_file_path = audio_source
+- Getting started (installation, setting up the environment, simple examples)
+- How-To examples (demos, integrations, helper functions)
+- Reference (full API docs)
+- Resources (high-level explanation of core concepts)
 
-    with open(audio_file_path, 'rb') as audio_file:
-      
-        content = audio_file.read()
+## 🚀 What can this help with?
 
-    client = speech.SpeechClient()
-    audio = speech.RecognitionAudio(content=content)
-    config = speech.RecognitionConfig(
-        encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
-        sample_rate_hertz=16000,
-        language_code="en-US",
-    )
-    if not transcript:
-        return 'Transcription failed.'
-    return transcript
+There are six main areas that LangChain is designed to help with.
+These are, in increasing order of complexity:
 
+**📃 LLMs and Prompts:**
 
-Contributing
-Contributions are welcome! Please read our contributing guidelines for details.
+This includes prompt management, prompt optimization, a generic interface for all LLMs, and common utilities for working with LLMs.
 
-License
-ARC-ANGEL is open-sourced under the MIT License.
+**🔗 Chains:**
+
+Chains go beyond a single LLM call and involve sequences of calls (whether to an LLM or a different utility). LangChain provides a standard interface for chains, lots of integrations with other tools, and end-to-end chains for common applications.
+
+**📚 Data Augmented Generation:**
+
+Data Augmented Generation involves specific types of chains that first interact with an external data source to fetch data for use in the generation step. Examples include summarization of long pieces of text and question/answering over specific data sources.
+
+**🤖 Agents:**
+
+Agents involve an LLM making decisions about which Actions to take, taking that Action, seeing an Observation, and repeating that until done. LangChain provides a standard interface for agents, a selection of agents to choose from, and examples of end-to-end agents.
+
+**🧠 Memory:**
+
+Memory refers to persisting state between calls of a chain/agent. LangChain provides a standard interface for memory, a collection of memory implementations, and examples of chains/agents that use memory.
+
+**🧐 Evaluation:**
+
+[BETA] Generative models are notoriously hard to evaluate with traditional metrics. One new way of evaluating them is using language models themselves to do the evaluation. LangChain provides some prompts/chains for assisting in this.
+
+For more information on these concepts, please see our [full documentation](https://python.langchain.com).
+
+## 💁 Contributing
+
+As an open-source project in a rapidly developing field, we are extremely open to contributions, whether it be in the form of a new feature, improved infrastructure, or better documentation.
+
+For detailed information on how to contribute, see [here](../../.github/CONTRIBUTING.md).
